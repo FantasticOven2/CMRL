@@ -123,7 +123,6 @@ class SimEnv(Env):
         self._viewer.circle(center = goal, radius = 0.3, color = (0, 255, 0))
         self._viewer.circle(center = agent + self.state[:2], radius = 0.3, color = (50, 100, 150))
         self._viewer.display(self.time_step)
-        self._viewer.close()
 
     def reset(self, eval=False, prob=0.4):
         if not eval:
