@@ -38,8 +38,8 @@ class SimEnv(Env):
         if np.array_equal(state, self.goal):
             reward = 100
             done = True
-        elif np.array_equal(state, self.intersection) and self.state[3] == 0:
-            reward = 10
+        # elif np.array_equal(state, self.intersection) and self.state[3] == 0:
+        #     reward = 10
         else:
             reward = 0
         return reward, done
@@ -78,10 +78,45 @@ class SimEnv(Env):
         else: 
             if self.state[3] == 1.0:
                 reward = -np.abs(self.state[1] - 10)
-                print('second manfold: ', reward)
             else: 
                 reward = - np.abs(self.state[0] - 10)
-                print('first manifold: ', reward)
+        return reward, done
+
+    def _goalReward(self, prevState, currState):
+        done = False
+
+        ### Fall off the manifold ###
+        if self.check_constraints():
+            reward = -100
+            done = True
+        elif np.array_equal(self.state[:2], self.goal[:2]):
+            reward = 100
+            done = True
+        ### Goal directed reward:
+        # print('goal: ', self.goal[:2])
+        # print('prevState: ', prevState)
+        # print('currState: ', currState)
+        prevDist = np.linalg.norm(self.goal[:2] - prevState)
+        currDist = np.linalg.norm(self.goal[:2] - currState)
+        # print('prevDist: ', prevDist)
+        # print('currDist: ', currDist)
+        # reward = prevDist - currDist
+        # print('reward func: ', reward)
+        reward = -np.linalg.norm(self.goal[:2] - currState)
+        return reward, done
+    
+    def _geodReward(self):
+        done = False
+
+        ### Fall off the manifold ###
+        if self.check_constraints():
+            reward = -100
+            done = True
+        
+        if self.state[3] == 1:
+            reward = -np.linalg.norm(self.goal[:2] - self.state[:2])
+        else:
+            reward = -10 - np.linalg.norm(self.intersection[:2] - self.state[:2])
         return reward, done
 
     def step(self, action):
@@ -93,10 +128,15 @@ class SimEnv(Env):
             _action = np.array([action[0], 0.0])
             # _action = np.array([[1.0, 0.0], [0.0, 0.0]]) @ _action
 
+        prevState = np.array([self.state[0], self.state[1]])
+
         self.state[0] += _action[0]
         self.state[1] += _action[1]
         
-        reward, done = self._reward(self.state)
+        currState = self.state[:2]
+        # print('prev: ', prevState)
+        # print('curr: ', currState)
+        reward, done = self._geodReward()
         # reward, done = self._sparseReward(self.state)
 
         if self.state[0] == 10.0 and self.state[1] == 0.0:
@@ -140,21 +180,21 @@ class SimEnv(Env):
 
 if __name__ == '__main__':
     env = SimEnv()
-    env.state = np.array([1, 0.4, 1, 0])
-    print(env.check_constraints())
-    env.state = np.array([0.0, 0.0, 1.0, 0.0])
-    print(env.check_constraints())
-    env.state = np.array([1, -0.4, 1, 0])
-    print(env.check_constraints())
-    env.state = np.array([0, 0, 1, 0])
-    print(env.check_constraints())
-    env.state = np.array([10, 0, 1, 0])
-    print(env.check_constraints())
-    env.state = np.array([10.1, 2, 1, 0])
-    print(env.check_constraints())
-    env.state = np.array([9.9, 2, 1, 0])
-    print(env.check_constraints())
+    # env.state = np.array([1, 0.4, 1, 0])
+    # print(env.check_constraints())
+    # env.state = np.array([0.0, 0.0, 1.0, 0.0])
+    # print(env.check_constraints())
+    # env.state = np.array([1, -0.4, 1, 0])
+    # print(env.check_constraints())
+    # env.state = np.array([0, 0, 1, 0])
+    # print(env.check_constraints())
+    # env.state = np.array([10, 0, 1, 0])
+    # print(env.check_constraints())
+    # env.state = np.array([10.1, 2, 1, 0])
+    # print(env.check_constraints())
+    # env.state = np.array([9.9, 2, 1, 0])
+    # print(env.check_constraints())
 
-    # for _ in range(10):
-    #     env.state[0] += 1
-    #     env.render() 
+    for _ in range(1000):
+        env.state[0] += 1
+        env.render() 

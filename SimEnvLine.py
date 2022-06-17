@@ -13,7 +13,7 @@ from gym import Env
 from gym.spaces import Discrete, Box
 
 
-class SimEnv45(Env):
+class SimEnvLine(Env):
 
     def __init__(self, time_step = 0.1, eps = 0.5):
         self.time_step = time_step
@@ -25,12 +25,12 @@ class SimEnv45(Env):
 
         self.state = np.array([0.0, 0.0])
         self.intersection = np.array([10.0, 0.0])
-        self.goal = np.array([20.0, 10.0])
+        self.goal = np.array([20.0, 0.0])
 
         self.next_manifold = False
 
     def check_constraints(self):
-        on_second_manifold = (self.state[1] != self.state[0] - 10.0)
+        on_second_manifold = (self.state[1] != 0)
         on_first_manifold = (self.state[1] != 0)
         return on_first_manifold * on_second_manifold
 
@@ -43,9 +43,10 @@ class SimEnv45(Env):
 
         elif np.array_equal(state, self.intersection):
             if self.next_manifold:
+                print('Here')
                 reward = -np.linalg.norm(self.goal - self.state)
             else:
-                reward = 10
+                reward = 1
             
         elif np.array_equal(state, self.goal):
             reward = 100
@@ -55,14 +56,13 @@ class SimEnv45(Env):
             if self.next_manifold:
                 reward = -np.linalg.norm(self.goal - self.state)
             else:
-                reward = -np.linalg.norm(self.intersection - self.state)
+                reward = -np.linalg.norm(self.goal - self.state)
         return reward, done
 
     def step(self, action):
         ### Projection ###
         if self.next_manifold:
-            max_act = max(action[0], action[1])
-            _action = np.array([max_act, max_act])
+            _action = np.array([action[0], 0.0])
         
         else:
             _action = np.array([action[0], 0.0])
@@ -80,15 +80,15 @@ class SimEnv45(Env):
     def render(self):
         start = np.array([0.0, 10.0])
         intersection = np.array([10.0, 10.0])
-        goal = np.array([20.0, 20.0])
+        goal = np.array([20.0, 10.0])
         agent = np.array([0.0, 10.0])
 
         hline_start = np.array([0.0, 10.0])
         hline_end = np.array([22, 10])
-        vline_start = np.array([10, 10])
-        vline_end = np.array([20, 20])
+        # vline_start = np.array([10, 10])
+        # vline_end = np.array([20, 20])
         self._viewer.line(hline_start, hline_end, color = (100, 100, 100), width = 5)
-        self._viewer.line(vline_start, vline_end, color = (100, 100, 100), width = 5)
+        # self._viewer.line(vline_start, vline_end, color = (100, 100, 100), width = 5)
         self._viewer.circle(center = start, radius = 0.3, color = (255, 0, 0))
         self._viewer.circle(center = intersection, radius = 0.3, color = (0, 0, 255))
         self._viewer.circle(center = goal, radius = 0.3, color = (0, 255, 0))
@@ -108,9 +108,5 @@ class SimEnv45(Env):
         return self.state
 
 if __name__ == '__main__':
-    env = SimEnv45()
-
-    for _ in range(1000):
-        env.state[0] += 1
-        env.render() 
-
+    env = SimEnvLine()
+    
