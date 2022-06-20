@@ -89,20 +89,13 @@ class SimEnv(Env):
         if self.check_constraints():
             reward = -100
             done = True
-        elif np.array_equal(self.state[:2], self.goal[:2]):
-            reward = 100
-            done = True
-        ### Goal directed reward:
-        # print('goal: ', self.goal[:2])
-        # print('prevState: ', prevState)
-        # print('currState: ', currState)
+        elif self.state[0] == 10:
+            if self.state[1] > self.goal[1] - 0.5 or self.state[1] < self.goal[1] + 0.5:
+                reward = 100
+                done = True
         prevDist = np.linalg.norm(self.goal[:2] - prevState)
         currDist = np.linalg.norm(self.goal[:2] - currState)
-        # print('prevDist: ', prevDist)
-        # print('currDist: ', currDist)
-        # reward = prevDist - currDist
-        # print('reward func: ', reward)
-        reward = -np.linalg.norm(self.goal[:2] - currState)
+        reward = np.exp(-np.linalg.norm(self.goal[:2] - currState))
         return reward, done
     
     def _geodReward(self):
@@ -136,7 +129,7 @@ class SimEnv(Env):
         currState = self.state[:2]
         # print('prev: ', prevState)
         # print('curr: ', currState)
-        reward, done = self._geodReward()
+        reward, done = self._goalReward(prevState, currState)
         # reward, done = self._sparseReward(self.state)
 
         if self.state[0] == 10.0 and self.state[1] == 0.0:

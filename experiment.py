@@ -14,9 +14,9 @@ env = SimEnv(time_step = 0.5)
 # env = SimEnvLine(time_step = 0.5)
 device = torch.device(
         "cuda:0") if torch.cuda.is_available() else torch.device("cpu")
-model = PPO('MlpPolicy', env, verbose=1, device=device, ent_coef=0.1, seed=150)
+model = PPO('MlpPolicy', env, verbose=1, device=device, ent_coef=0.1, seed=1024)
 print('model: ', model)
-model = model.learn(total_timesteps=500000, eval_freq=1000)
+model = model.learn(total_timesteps=250000, eval_freq=1000)
 
 # Evaulation
 obs = env.reset(eval=True)
