@@ -113,13 +113,15 @@ class SimEnv(Env):
         return reward, done
 
     def step(self, action):
-        ### Projection ###
-        if self.state[3] == 1.0: 
-            _action = np.array([0.0, action[1]])
-            # _action = np.array([[0.0, 0.0], [0.0, 1.0]]) @ _action
-        else:
-            _action = np.array([action[0], 0.0])
-            # _action = np.array([[1.0, 0.0], [0.0, 0.0]]) @ _action
+        _action = action
+        
+        # ### Projection ###
+        # if self.state[3] == 1.0: 
+        #     _action = np.array([0.0, action[1]])
+        #     # _action = np.array([[0.0, 0.0], [0.0, 1.0]]) @ _action
+        # else:
+        #     _action = np.array([action[0], 0.0])
+        #     # _action = np.array([[1.0, 0.0], [0.0, 0.0]]) @ _action
 
         prevState = np.array([self.state[0], self.state[1]])
 
@@ -129,8 +131,8 @@ class SimEnv(Env):
         currState = self.state[:2]
         # print('prev: ', prevState)
         # print('curr: ', currState)
-        reward, done = self._goalReward(prevState, currState)
-        # reward, done = self._sparseReward(self.state)
+        # reward, done = self._goalReward(prevState, currState)
+        reward, done = self._geodReward()
 
         if self.state[0] == 10.0 and self.state[1] == 0.0:
             self.state[2] = 0.0
@@ -158,17 +160,16 @@ class SimEnv(Env):
         self._viewer.display(self.time_step)
 
     def reset(self, eval=False, prob=0.4):
-        if not eval:
-            rand = np.random.uniform()
-            if rand < prob:
-                print('1')
-                self.state = np.array([0.0, 0.0, 1.0, 0.0])
-            else:
-                print('2')
-                self.state = np.array([10.0, 0.0, 1.0, 0.0])
+        # if not eval:
+        #     rand = np.random.uniform()
+        #     if rand < prob:
+        #         self.state = np.array([0.0, 0.0, 1.0, 0.0])
+        #     else:
+        #         self.state = np.array([10.0, 0.0, 1.0, 0.0])
         # self.next_manifold = False
-        else: 
-            self.state = np.array([0.0, 0.0, 1.0, 0.0])
+        # else: 
+        #     self.state = np.array([0.0, 0.0, 1.0, 0.0])
+        self.state = np.array([0.0, 0.0, 1.0, 0.0])
         return self.state
 
 if __name__ == '__main__':
