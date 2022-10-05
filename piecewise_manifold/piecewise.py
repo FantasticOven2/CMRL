@@ -7,7 +7,7 @@ import gym
 from gym import Env
 from gym.spaces import Discrete, Box
 
-class HoriEnv(Env):
+class SimEnv(Env):
   
     def __init__(self, time_step = 0.1, eps = 0.5):
         self.time_step = time_step
@@ -21,25 +21,43 @@ class HoriEnv(Env):
 
         self.state = np.array([0.0, 0.0])
         # self.state = np.array([10.0, 0.0, 1.0, 0.0])
-        self.goal = np.array([10.0, 0.0])
-
+        self.intersection = np.array([10.0, 0.0])
+        self.goal = np.array([10.0, 10.0])
         self.eps = eps
-        # self.next_manifold = False
+
+        self.next_manifold = False
+
+    def _horizontal_reward(self):
+        if self.state[1] >= 0.5 or self.state[1] <= -0.5:
+            reward = -100
+        else:
+            reward = np.exp(-np.linalg.norm(self.intersection - self.state))
+        return reward
+
+    def _vertical_reward(self):
+        if self.state[0] >= 10.5 or self.state[0] <= 9.5:
+            reward = -100
+        else:
+            reward = np.exp(-np.linalg.norm(self.goal - self.state))
+        return reward
 
     def step(self, action):
         self.state[0] += action[0]
         self.state[1] += action[1]
-        
+
         done = False
         if self.state[0] == self.goal[0] and self.state[1] == self.goal[1]:
             done = True
         if self.state[0] >= 12 or self.state[0] <= -12 or self.state[1] >= 12 or self.state[1] <= 12:
             done = True
         
-        if self.state[1] >= 0.5 or self.state[1] <= -0.5:
-            reward = -100
+        if np.linalg.norm(self.intersection - self.state) <= 0.5 and not self.next_manifold:
+            self.next_manifold = True
+        
+        if not self.next_manifold:
+            reward = self._horizontal_reward()
         else:
-            reward = np.exp(-np.linalg.norm(self.goal - self.state))
+            reward = self._vertical_reward()
 
         info = {}
         return self.state, reward, done, info
@@ -62,6 +80,13 @@ class HoriEnv(Env):
         self._viewer.circle(center = agent + self.state[:2], radius = 0.3, color = (50, 100, 150))
         self._viewer.display(self.time_step)
 
-    def reset(self):
-        self.state = np.array([0.0, 0.0])
+    def reset(self, eval=False):
+        if eval:
+            self.state = np.array([0.0, 0.0])
+        else:
+            r = np.random.uniform()
+            if r < 0.5:
+                self.state = np.array([10.0, 0.0])
+            else:
+                self.state = np.array([0.0, 0.0])
         return self.state
