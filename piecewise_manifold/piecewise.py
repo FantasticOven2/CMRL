@@ -15,14 +15,14 @@ class SimEnv(Env):
         self._viewer = Viewer(env_width = 22, env_height = 22, background = (0, 0, 0))
         
         self.action_space = Box(np.array([-1, -1]), np.array([1, 1]))
-        self.observation_space = Box(np.array([-10, -10, 0]), np.array([10, 10, 1]))
+        self.observation_space = Box(np.array([-10, -10]), np.array([10, 10]))
         # mdp_info = MDPInfo(observation_space, action_space, gamma, horizon)
         # super().__init__(mdp_info)
 
-        self.state = np.array([0.0, 0.0, 0])
+        self.state = np.array([0.0, 0.0])
         # self.state = np.array([10.0, 0.0, 1.0, 0.0])
-        self.intersection = np.array([10.0, 0.0, 0])
-        self.goal = np.array([10.0, 10.0, 1])
+        self.intersection = np.array([10.0, 0.0])
+        self.goal = np.array([10.0, 10.0])
         self.eps = eps
 
         self.next_manifold = False
@@ -48,12 +48,11 @@ class SimEnv(Env):
         done = False
         if np.linalg.norm(self.goal - self.state) <= 0.5:
             done = True
-        if self.state[0] >= 12 or self.state[0] <= -12 or self.state[1] >= 12 or self.state[1] <= 12:
+        if self.state[0] >= 12 or self.state[0] <= -12 or self.state[1] >= 12 or self.state[1] <= -12:
             done = True
         
         if np.linalg.norm(self.intersection - self.state) <= 0.5 and not self.next_manifold:
             self.next_manifold = True
-            self.state[2] = 1
         
         if not self.next_manifold:
             reward = self._horizontal_reward()
@@ -83,5 +82,5 @@ class SimEnv(Env):
 
     def reset(self, eval=False):
         self.next_manifold = False
-        self.state = np.array([0.0, 0.0, 0])
+        self.state = np.array([0.0, 0.0])
         return self.state

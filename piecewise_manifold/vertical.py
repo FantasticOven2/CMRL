@@ -31,7 +31,7 @@ class VertEnv(Env):
         self.state[1] += action[1]
         
         done = False
-        if self.state[0] == self.goal[0] and self.state[1] == self.goal[1]:
+        if np.linalg.norm(self.state - self.goal) <= 0.5:
             done = True
         if self.state[0] >= 12 or self.state[0] <= -12 or self.state[1] >= 12 or self.state[1] <= 12:
             done = True
